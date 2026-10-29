@@ -1,0 +1,32 @@
+name: Build NEON RIFT Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    container:
+      image: barichello/godot-ci:4.4.1
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Import Godot project resources
+        run: godot --headless --editor --path . --quit
+      - name: Export Android APK
+        run: |
+          mkdir -p build
+          godot --headless --path . --export-debug "Android" build/NEON_RIFT.apk
+          test -s build/NEON_RIFT.apk
+      - name: Upload installable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NEON-RIFT-Android-APK
+          path: build/NEON_RIFT.apk
+          if-no-files-found: error
+          retention-days: 14
